@@ -1,7 +1,7 @@
 # Ascii to ascii image
 Convert image to ascii image
 ```
-Version 0.1
+Version 0.2
 ```
 ## Usage
 ```python
