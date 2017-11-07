@@ -16,3 +16,5 @@ my_img.image_save()
 ![alt text](https://s1.postimg.org/57krvb6i73/Mona_Lisa.jpg)
 #### Ascii image
 ![alt text](https://s1.postimg.org/5sufhm58tb/MONA_TEST4.jpg)
+### Contributors
+- Sl1mShady  (https://github.com/sl1msh4dy)
