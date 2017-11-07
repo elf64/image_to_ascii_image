@@ -1,6 +1,7 @@
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 
-# Version 0.1
+# Version 0.2
+
 
 class Pyascii:
     def __init__(
@@ -10,14 +11,14 @@ class Pyascii:
                 ):
         self.image_path = image_path
         self.save_path = save_path
-        self.default_chars = list("_.:-=fg#%\\")
+        self.default_chars = list("_.:-=fg#%@")
         self.block_size = 8
         self.font_size = 12
         self.font = "Anonymous_Pro.ttf"
         self.char_brightness_list = self.char_brightness()
         self.dict_test = {
             self.default_chars[k]: self.char_brightness_list[k]
-            for k in range(10)
+           for k in range(len(self.default_chars))
         }
         self.image = Image.open(self.image_path)
         self.font = ImageFont.truetype(self.font, self.font_size)
@@ -36,30 +37,36 @@ class Pyascii:
             for j in range(0, self.h, self.block_size):
                 r, g, b = self.rgb_image.getpixel((i, j))
                 avg_brg = self.avg_brightness_pixel(r, g, b)
-                # Find a better way to get the average rgb value for a subgroup of pixels
-                # so we can have better colors on the image
-                color = (r, g, b)
-                # These if/else/elif needs to be removed!
-                if avg_brg < self.char_brightness_list[0]:
-                    self.draw_text(self.default_chars[0], self.draw, i, j, self.font, color)
-                elif avg_brg >= self.char_brightness_list[0] and avg_brg < self.char_brightness_list[1]:
-                    self.draw_text(self.default_chars[1], self.draw, i, j, self.font, color)
-                elif avg_brg >= self.char_brightness_list[1] and avg_brg < self.char_brightness_list[2]:
-                    self.draw_text(self.default_chars[2], self.draw, i, j, self.font, color)
-                elif avg_brg >= self.char_brightness_list[2] and avg_brg < self.char_brightness_list[3]:
-                    self.draw_text(self.default_chars[3], self.draw, i, j, self.font, color)
-                elif avg_brg >= self.char_brightness_list[3] and avg_brg < self.char_brightness_list[4]:
-                    self.draw_text(self.default_chars[4], self.draw, i, j, self.font, color)
-                elif avg_brg >= self.char_brightness_list[4] and avg_brg < self.char_brightness_list[5]:
-                    self.draw_text(self.default_chars[5], self.draw, i, j, self.font, color)
-                elif avg_brg >= self.char_brightness_list[5] and avg_brg < self.char_brightness_list[6]:
-                    self.draw_text(self.default_chars[6], self.draw, i, j, self.font, color)
-                elif avg_brg >= self.char_brightness_list[6] and avg_brg < self.char_brightness_list[7]:
-                    self.draw_text(self.default_chars[7], self.draw, i, j, self.font, color)
-                elif avg_brg >= self.char_brightness_list[7] and avg_brg < self.char_brightness_list[8]:
-                    self.draw_text(self.default_chars[8], self.draw, i, j, self.font, color)
-                else:
-                    self.draw_text(self.default_chars[9], self.draw, i, j, self.font, color)
+                color = (255, 255, 255)
+                r_list = []
+                g_list = []
+                b_list  = []
+                for x in range(i, i+self.block_size):
+                    for y in range(j, j+self.block_size):
+                        r2, g2, b2 = self.rgb_image.getpixel((x, y))
+                        r_list.append(r2)
+                        g_list.append(g2)
+                        b_list.append(b2)
+                try:
+                    color = (
+                            int(sum(r_list) / float(len(r_list))),
+                            int(sum(g_list) / float(len(g_list))),
+                            int(sum(b_list) / float(len(b_list)))
+                            )
+                except:
+                    pass
+                
+                self.draw_text(self.default_chars[self.check_loop(avg_brg)],
+                        self.draw, i, j, self.font, color)
+    
+    def check_loop(self, value):
+        # We're doing a loop in range 10 (length of the ascii chars we use)
+        # and it returns what index of the ascii character we need to use
+        for i in range(len(self.default_chars)):
+            if value < self.char_brightness_list[i]:
+                return i
+            elif value >= self.char_brightness_list[i-1] and value < self.char_brightness_list[i]:
+                return i
 
     def image_show(self):
         # Show the ascii image
