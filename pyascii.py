@@ -14,7 +14,7 @@ class Pyascii:
             font_path=None,
             rgb_color=None,
             optimize=False,
-            quality=None
+            quality=100
                 ):
         self.optimize = optimize
         self.quality = quality
