@@ -14,7 +14,7 @@ class Pyascii:
             font_path=None,
             rgb_color=None,
             optimize=False,
-            quality=None
+            quality=100
                 ):
         self.optimize = optimize
         self.quality = quality
@@ -149,7 +149,7 @@ class Pyascii:
         self.final_image.save(
                 self.save_path, 
                 optimize=self.optimize,
-                quality=100 if self.quality == None else self.quality
+                quality=self.quality
                 )
 
     def default_show(self):
