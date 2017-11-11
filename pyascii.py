@@ -1,6 +1,6 @@
 from PIL import Image, ImageFont, ImageDraw, ImageEnhance
 
-# Version 0.2
+# Version 0.3
 
 
 class Pyascii:
@@ -8,22 +8,43 @@ class Pyascii:
             self,
             image_path,
             save_path,
+            chars=None,
+            enh_color=None,
+            enh_brg=None,
+            font_path=None,
+            rgb_color=None,
+            optimize=False,
+            quality=None
                 ):
+        self.optimize = optimize
+        self.quality = quality
+        self.rgb_color = rgb_color
+        self.enh_color = enh_color
+        self.enh_brg = enh_brg
         self.image_path = image_path
         self.save_path = save_path
-        self.default_chars = list("_.:-=fg#%@")
-        self.block_size = 8
+        self.bg_color = "black"
+        # (0, 0, 0)
+        # If no color is provided to bg_color PIL library will by
+        # default set the background color to black.
+        # If we set the new image mode to RGBA and bg_color is None
+        # the image will have no background
+        self.default_chars = list("_^:-=fg#%@") if chars == None else chars
+        # _.:-=fg#%@    -> First char list
+        # ^.:-=fg#%\\   -> Second char list
+        self.block_size = 6
         self.font_size = 12
-        self.font = "Anonymous_Pro.ttf"
+        # Some good block size  -> 6    }
+        # Some good font size   -> 12   } Resolution 1024x768
+        # and with img.enhance_color(2.0)
+        # without brightness enhancement
+        self.font = "Anonymous_Pro.ttf" if font_path == None else font_path
         self.char_brightness_list = self.char_brightness()
-        self.dict_test = {
-            self.default_chars[k]: self.char_brightness_list[k]
-           for k in range(len(self.default_chars))
-        }
         self.image = Image.open(self.image_path)
         self.font = ImageFont.truetype(self.font, self.font_size)
         self.rgb_image = self.image.convert("RGB")
-        self.final_image = Image.new(self.rgb_image.mode, self.rgb_image.size, "black")
+        self.final_image = Image.new(self.rgb_image.mode, 
+                        self.rgb_image.size, self.bg_color)
         self.w, self.h = self.image.size
         self.draw = ImageDraw.Draw(self.final_image)
 
@@ -33,17 +54,26 @@ class Pyascii:
 
     def default_convert(self):
         # Default function to convert an image to a ascii image
+        self.print_info()
         for i in range(0, self.w, self.block_size):
             for j in range(0, self.h, self.block_size):
                 r, g, b = self.rgb_image.getpixel((i, j))
                 avg_brg = self.avg_brightness_pixel(r, g, b)
-                color = (255, 255, 255)
                 r_list = []
                 g_list = []
                 b_list  = []
                 for x in range(i, i+self.block_size):
                     for y in range(j, j+self.block_size):
-                        r2, g2, b2 = self.rgb_image.getpixel((x, y))
+                        #print(x, y)
+                        try:
+                            # The error
+                            # "IndexError: image index out of range"
+                            # might happen if the block size is a certain
+                            # number -> for ex. 6
+                            r2, g2, b2 = self.rgb_image.getpixel((x, y))
+                        except IndexError as e:
+                            pass
+                            
                         r_list.append(r2)
                         g_list.append(g2)
                         b_list.append(b2)
@@ -52,20 +82,25 @@ class Pyascii:
                             int(sum(r_list) / float(len(r_list))),
                             int(sum(g_list) / float(len(g_list))),
                             int(sum(b_list) / float(len(b_list)))
-                            )
+                            ) if self.rgb_color == None else self.rgb_color
                 except:
                     pass
                 
                 self.draw_text(self.default_chars[self.check_loop(avg_brg)],
                         self.draw, i, j, self.font, color)
-    
+        if self.enh_color != None: 
+            self.enhance_color(self.enh_color)
+        if self.enh_brg != None:
+            self.enhance_brightness(self.enh_brg)
+
     def check_loop(self, value):
         # We're doing a loop in range 10 (length of the ascii chars we use)
         # and it returns what index of the ascii character we need to use
         for i in range(len(self.default_chars)):
             if value < self.char_brightness_list[i]:
                 return i
-            elif value >= self.char_brightness_list[i-1] and value < self.char_brightness_list[i]:
+            elif (value >= self.char_brightness_list[i-1] and
+                        value < self.char_brightness_list[i]):
                 return i
 
     def image_show(self):
@@ -109,7 +144,13 @@ class Pyascii:
 
     def image_save(self):
         # Save the final image to the specified path
-        self.final_image.save(self.save_path)
+        # Optimize=True -> Default=False
+        # quality       -> Default=None
+        self.final_image.save(
+                self.save_path, 
+                optimize=self.optimize,
+                quality=self.quality
+                )
 
     def default_show(self):
         # Show the default image
