@@ -149,7 +149,7 @@ class Pyascii:
         self.final_image.save(
                 self.save_path, 
                 optimize=self.optimize,
-                quality=self.quality
+                quality=100 if self.quality == None else self.quality
                 )
 
     def default_show(self):
