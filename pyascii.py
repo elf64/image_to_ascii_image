@@ -57,35 +57,8 @@ class Pyascii:
         self.print_info()
         for i in range(0, self.w, self.block_size):
             for j in range(0, self.h, self.block_size):
-                r, g, b = self.rgb_image.getpixel((i, j))
+                color = (r, g, b) = self.rgb_image.getpixel((i, j))
                 avg_brg = self.avg_brightness_pixel(r, g, b)
-                r_list = []
-                g_list = []
-                b_list  = []
-                for x in range(i, i+self.block_size):
-                    for y in range(j, j+self.block_size):
-                        #print(x, y)
-                        try:
-                            # The error
-                            # "IndexError: image index out of range"
-                            # might happen if the block size is a certain
-                            # number -> for ex. 6
-                            r2, g2, b2 = self.rgb_image.getpixel((x, y))
-                        except IndexError as e:
-                            pass
-                            
-                        r_list.append(r2)
-                        g_list.append(g2)
-                        b_list.append(b2)
-                try:
-                    color = (
-                            int(sum(r_list) / float(len(r_list))),
-                            int(sum(g_list) / float(len(g_list))),
-                            int(sum(b_list) / float(len(b_list)))
-                            ) if self.rgb_color == None else self.rgb_color
-                except:
-                    pass
-                
                 self.draw_text(self.default_chars[self.check_loop(avg_brg)],
                         self.draw, i, j, self.font, color)
         if self.enh_color != None: 
